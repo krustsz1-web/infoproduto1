@@ -23,7 +23,7 @@ const result=document.createElement("div");
 result.id="triagemResult";
 result.className="triagem-result "+(desqualificado?"not-qualified":"qualified");
 if(desqualificado){
-  result.innerHTML="<strong>Pelas informações preenchidas, não identificamos neste momento elementos suficientes para uma análise de possível direito ao salário-maternidade.</strong><p>Por isso, não vamos encaminhar seus dados para o WhatsApp. Se houver alguma informação que você tenha dúvida ou que possa estar diferente da situação real, vale buscar uma análise individualizada.</p>";
+  result.innerHTML="<strong>Pelas informações que você respondeu, neste momento não identificamos os principais requisitos que indicariam possível direito ao salário-maternidade.</strong><p>Isso não significa, por si só, uma conclusão definitiva sobre o seu caso. O direito pode depender de informações do seu histórico previdenciário que não foram consideradas nesta triagem.</p><p>Por isso, não vamos encaminhar seus dados automaticamente para o WhatsApp. Se alguma resposta estiver incorreta, se você tiver contribuições anteriores ou se houver alguma situação diferente da informada, vale fazer uma análise individualizada.</p>";
   form.after(result);
   form.style.display="none";
   result.scrollIntoView({behavior:"smooth",block:"center"});
