@@ -48,10 +48,13 @@
 <form id="leadForm" class="lead-form">
 <label>Seu nome<input name="nome" required placeholder="Como podemos chamar você?"></label>
 <label>Você está grávida ou já teve o bebê?<select name="fase" required><option value="">Selecione</option><option>Estou grávida</option><option>Já tive o bebê</option></select></label>
-<label>Qual é a sua situação?<select name="trabalho" required><option value="">Selecione</option><option>Sou MEI</option><option>Trabalho com carteira assinada</option><option>Sou autônoma</option><option>Estou desempregada</option><option>Outra / não sei</option></select></label>
-<label>Previsão do parto ou data do nascimento<input name="data" type="date"><span class="date-option"><input name="nao_sei_data" type="checkbox" value="Não sei informar"> Não sei informar</span></label>
+<label>Qual é a sua situação?<select name="trabalho" required><option value="">Selecione</option><option>Sou MEI</option><option>Trabalho com carteira assinada</option><option>Sou autônoma</option><option>Estou desempregada</option><option>Trabalho como empregada doméstica</option><option>Sou trabalhadora rural</option><option>Outra / não sei</option></select></label>
+<label>Você já teve vínculo com o INSS ou fez contribuições?<select name="vinculo" required><option value="">Selecione</option><option>Sim</option><option>Não</option><option>Não sei informar</option></select></label>
+<label>Se está sem contribuir atualmente, quando foi sua última contribuição?<select name="ultima_contribuicao"><option value="">Não se aplica / não sei</option><option>Menos de 12 meses</option><option>Entre 12 e 24 meses</option><option>Entre 24 e 36 meses</option><option>Mais de 36 meses</option></select></label>
+<label>Você já pediu o salário-maternidade ao INSS?<select name="pedido" required><option value="">Selecione</option><option>Não</option><option>Sim, foi aprovado</option><option>Sim, foi negado</option><option>Não sei</option></select></label>
+<label>Previsão do parto ou data do nascimento<input name="data" type="date"><span class="date-option"><input name="nao_sei_data" type="checkbox" value="Não sei informar"> <span>Não sei informar</span></span></label>
 <label>WhatsApp<input name="whatsapp" required placeholder="(00) 00000-0000" inputmode="tel"></label>
-<button class="btn btn-primary full" type="submit">Quero analisar meu caso <b>→</b></button><div class="cta-free form-free">Análise inicial gratuita</div>
+<button class="btn btn-primary full" type="submit">Ver resultado da análise <b>→</b></button><div class="cta-free form-free">Análise inicial gratuita</div>
 <small>Seus dados serão utilizados para o contato solicitado.</small>
 </form></div></section>
 
