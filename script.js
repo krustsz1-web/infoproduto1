@@ -59,4 +59,5 @@ $("#loginForm").onsubmit=async e=>{e.preventDefault();const f=new FormData(e.cur
 $("#registerForm").onsubmit=async e=>{e.preventDefault();const f=new FormData(e.currentTarget);$("#authMsg").textContent="Criando sua conta...";const q=await db.auth.signUp({email:f.get("email"),password:f.get("password"),options:{data:{name:f.get("name"),whatsapp:f.get("whatsapp")}}});if(q.error){$("#authMsg").textContent=q.error.message;return}if(q.data.session)location.hash="#app";else $("#authMsg").textContent="Conta criada. Confira seu e-mail para confirmar e depois entre novamente."};
 $("#resetPassword").onclick=async()=>{const email=prompt("E-mail cadastrado:");if(!email)return;const q=await db.auth.resetPasswordForEmail(email,{redirectTo:location.origin+"#login"});toast(q.error?q.error.message:"Instruções enviadas.")};
 db.auth.onAuthStateChange((_,s)=>{session=s;if(s&&location.hash==="#app")setTimeout(route,0)});
+window.addEventListener("hashchange",route);
 route();
