@@ -13,7 +13,7 @@
 <body>
 <header class="nav"><div class="container nav-inner">
 <a href="#home" class="brand"><span class="brand-mark">♡</span><span>Mãe <em>com</em> Direito</span></a>
-<div class="nav-actions"><a href="#triagem" class="nav-link">Quero saber mais</a><button class="btn btn-outline" data-open-auth>Entrar</button></div>
+<div class="nav-actions"><a href="#triagem" class="nav-link">Quero saber mais</a></div>
 </div></header>
 
 <main id="public">
@@ -49,15 +49,15 @@
 
 <section class="pink-section"><div class="container pink-grid"><div>
 <div class="section-kicker">SEM COMPLICAÇÃO</div><h2>Primeiro, entenda o seu caso.</h2>
-<p>Você pode começar pela triagem e, se quiser continuar, criar sua área exclusiva para conversar, enviar documentos e acompanhar o atendimento.</p>
+<p>Você pode começar pela triagem. Depois, nossa equipe entra em contato para orientar você sobre os próximos passos.</p>
 </div><div class="steps">
 <div><b>1</b><span>Você conta sua situação</span></div>
-<div><b>2</b><span>Cria sua área exclusiva</span></div>
-<div><b>3</b><span>Envia documentos e conversa com o advogado</span></div>
+<div><b>2</b><span>Analisamos as informações</span></div>
+<div><b>3</b><span>Entramos em contato com você</span></div>
 </div></div></section>
 
 <section class="section triagem" id="triagem"><div class="container form-layout">
-<div><div class="section-kicker">FALE SOBRE O SEU CASO</div><h2>Quer saber se pode ter direito?</h2><p>Responda algumas perguntas rápidas. Ao finalizar, você poderá criar sua conta e continuar o atendimento pelo próprio site.</p>
+<div><div class="section-kicker">FALE SOBRE O SEU CASO</div><h2>Quer saber se pode ter direito?</h2><p>Responda algumas perguntas rápidas. Depois, entraremos em contato para orientar você sobre o seu caso.</p>
 <div class="note"><b>Atendimento jurídico individualizado</b><br>O envio das informações não garante a concessão do benefício ou resultado específico.</div></div>
 <form id="leadForm" class="lead-form">
 <label>Seu nome<input name="nome" required placeholder="Como podemos chamar você?"></label>
@@ -68,9 +68,9 @@
 <label>Você já pediu o salário-maternidade ao INSS?<select name="pedido" required><option value="">Selecione</option><option>Não</option><option>Sim, foi aprovado</option><option>Sim, foi negado</option><option>Não sei</option></select></label>
 <label>Previsão do parto ou data do nascimento<input name="data" type="date"><span class="date-option"><input name="nao_sei_data" type="checkbox" value="sim"><span>Não sei informar</span></span></label>
 <label>WhatsApp<input name="whatsapp" required placeholder="(00) 00000-0000" inputmode="tel"></label>
-<button class="btn btn-primary full" type="submit">Continuar atendimento <b>→</b></button>
+<button class="btn btn-primary full" type="submit">Enviar minha triagem <b>→</b></button>
 <div class="cta-free form-free">Análise inicial gratuita</div>
-<small>Não envie sua senha do gov.br. Seus documentos serão enviados somente dentro da área autenticada.</small>
+<small>Não envie senha do gov.br. Neste formulário, informe apenas os dados necessários para a análise inicial.</small>
 </form></div></section>
 
 <section class="faq"><div class="container narrow"><div class="section-kicker">DÚVIDAS FREQUENTES</div><h2>Antes de falar com a gente</h2>
@@ -82,21 +82,8 @@
 <details><summary>Meu pedido foi negado. Acabou?</summary><p>Não necessariamente. É importante verificar o motivo da negativa, o CNIS, os vínculos, as contribuições e os documentos apresentados.</p></details>
 </div></section>
 
-<section class="final-cta"><div class="container final-cta-inner"><div><div class="section-kicker">SALÁRIO-MATERNIDADE</div><h2>Ficou com dúvida?</h2><p>Faça a triagem e, se quiser, continue o atendimento pela sua área exclusiva.</p></div><a href="#triagem" class="btn btn-white">Verificar meu caso →</a></div></section>
+<section class="final-cta"><div class="container final-cta-inner"><div><div class="section-kicker">SALÁRIO-MATERNIDADE</div><h2>Ficou com dúvida?</h2><p>Faça a triagem e receba orientação sobre os próximos passos.</p></div><a href="#triagem" class="btn btn-white">Verificar meu caso →</a></div></section>
 </main>
-
-<section id="authView" class="app-shell hidden"><div class="auth-card">
-<a href="#home" class="brand auth-brand"><span class="brand-mark">♡</span><span>Mãe <em>com</em> Direito</span></a>
-<div class="auth-tabs"><button class="active" data-auth-tab="login">Entrar</button><button data-auth-tab="register">Criar conta</button></div>
-<form id="loginForm" class="auth-form"><h1>Bem-vinda de volta</h1><p>Acesse seu atendimento.</p><label>E-mail<input name="email" type="email" required></label><label>Senha<input name="password" type="password" required></label><button class="btn btn-primary full">Entrar</button><button type="button" class="text-button" id="resetPassword">Esqueci minha senha</button></form>
-<form id="registerForm" class="auth-form hidden"><h1>Crie sua área</h1><p>Seus documentos e conversas ficarão reunidos em um só lugar.</p><label>Nome<input name="name" required></label><label>WhatsApp<input name="whatsapp" required></label><label>E-mail<input name="email" type="email" required></label><label>Senha<input name="password" type="password" minlength="8" required></label><button class="btn btn-primary full">Criar minha conta</button><small>Ao continuar, você concorda com o uso dos dados para atendimento e pode solicitar o encerramento da conta.</small></form>
-<div id="authMsg" class="auth-msg"></div><button class="back-public" data-back-public>← Voltar ao site</button>
-</div></section>
-
-<section id="portalView" class="portal hidden">
-<aside class="sidebar"><div class="side-brand"><span class="brand-mark">♡</span><strong>Mãe <em>com</em> Direito</em></strong></div><nav id="portalNav"></nav><button id="logoutBtn" class="logout">Sair</button></aside>
-<div class="portal-main"><header class="portal-top"><button id="mobileMenu" class="menu-button">☰</button><div><span class="portal-kicker">ÁREA SEGURA</span><h1 id="portalTitle">Meu atendimento</h1></div><div class="top-user" id="topUser"></div></header><div id="portalContent"></div></div>
-</section>
 
 <div id="toast" class="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
