@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://maecomdireito.vercel.app/sitemap.xml
