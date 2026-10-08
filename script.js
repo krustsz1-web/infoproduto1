@@ -20,6 +20,15 @@ function collectLead(form){
   return data;
 }
 
+function qualifiesLead(data){
+  if(data.vinculo!=="Sim") return false;
+  if(data.trabalho==="Estou desempregada"){
+    return data.ultima_contribuicao==="Menos de 12 meses";
+  }
+  if(data.trabalho==="Outra / não sei") return false;
+  return true;
+}
+
 function leadMessage(data){
   return [
     "Olá! Quero verificar meu possível direito ao salário-maternidade.",
@@ -44,14 +53,21 @@ $("#leadForm").onsubmit=e=>{
   const old=$("#triagemResult");
   if(old)old.remove();
 
-  const message=leadMessage(data);
-  const whatsappUrl="https://wa.me/5518981073779?text="+encodeURIComponent(message);
   const x=document.createElement("div");
   x.id="triagemResult";
   x.className="triagem-result qualified";
-  x.innerHTML="<strong>Triagem preenchida com sucesso.</strong><p>Agora clique abaixo para enviar suas informações pelo WhatsApp.</p><p><a class='btn btn-primary' href='"+whatsappUrl+"' target='_blank' rel='noopener'>Enviar pelo WhatsApp →</a></p><p class='micro'>Ao clicar, o WhatsApp será aberto com a mensagem pronta para envio.</p>";
-  form.after(x);
-  x.scrollIntoView({behavior:"smooth",block:"center"});
+
+  if(!qualifiesLead(data)){
+    x.innerHTML="<strong>Precisamos de mais informações antes de encaminhar seu caso.</strong><p>Pelas respostas fornecidas, não foi possível identificar neste momento uma situação suficientemente clara para encaminhamento ao atendimento. Isso não significa, necessariamente, que você não tenha direito.</p><p class='micro'>A análise definitiva depende do histórico previdenciário e dos documentos do caso.</p>";
+    form.after(x);
+    x.scrollIntoView({behavior:"smooth",block:"center"});
+    return;
+  }
+
+  const message=leadMessage(data);
+  const whatsappUrl="https://wa.me/5518981073779?text="+encodeURIComponent(message);
+  x.innerHTML="<strong>Seu caso passou pela triagem inicial.</strong><p>As respostas indicam uma situação compatível com possível direito ao salário-maternidade. Clique abaixo para enviar os dados pelo WhatsApp.</p><p><a class='btn btn-primary' href='"+whatsappUrl+"' target='_blank' rel='noopener'>Enviar pelo WhatsApp →</a></p><p class='micro'>A triagem inicial não substitui a análise jurídica completa.</p>";
+  form.after(x);  x.scrollIntoView({behavior:"smooth",block:"center"});
 };
 
 document.querySelectorAll('a[href="#triagem"]').forEach(a=>{
