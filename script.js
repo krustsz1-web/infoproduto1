@@ -73,7 +73,7 @@ $("#leadForm").onsubmit=e=>{
   x.className="triagem-result qualified";
 
   if(!qualifiesLead(data)){
-    x.innerHTML="<strong>Precisamos de mais informações antes de encaminhar seu caso.</strong><p>Pelas respostas fornecidas, não foi possível identificar neste momento uma situação suficientemente clara para encaminhamento ao atendimento. Isso não significa, necessariamente, que você não tenha direito.</p><p class='micro'>A análise definitiva depende do histórico previdenciário e dos documentos do caso.</p>";
+    x.innerHTML="<strong>Precisamos de mais informações para avaliar o seu caso.</strong><p>Com as respostas informadas, ainda não foi possível identificar com segurança se você pode ter direito ao salário-maternidade.</p><p>Isso não significa que você não tenha direito. Alguns casos dependem da análise do histórico de contribuições, vínculos com o INSS e demais informações previdenciárias.</p>";
     form.after(x);
     x.scrollIntoView({behavior:"smooth",block:"center"});
     return;
