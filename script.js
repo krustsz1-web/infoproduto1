@@ -28,10 +28,16 @@ function qualifiesLead(data){
     if(limitDate < new Date()) return false;
   }
 
-  if(data.vinculo!=="Sim") return false;
+  // Só bloqueia quando a pessoa informa expressamente que nunca teve vínculo/contribuição.
+  // "Não sei informar" deve seguir para análise, pois não permite concluir pela ausência de direito.
+  if(data.vinculo==="Não") return false;
+
   if(data.trabalho==="Estou desempregada"){
-    return data.ultima_contribuicao==="Menos de 12 meses";
+    // Para desempregadas, sem histórico suficiente não devemos prometer direito.
+    // "Não sei informar" segue para análise jurídica individual.
+    if(data.ultima_contribuicao==="Mais de 36 meses") return false;
   }
+
   if(data.trabalho==="Outra / não sei") return false;
   return true;
 }
