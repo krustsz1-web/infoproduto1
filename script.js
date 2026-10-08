@@ -92,8 +92,7 @@ $("#leadForm").onsubmit=e=>{
     return;
   }
 
-  const message=leadMessage(data);
-  const whatsappUrl="https://wa.me/5518981073779?text="+encodeURIComponent(message);
+  // Registra Lead somente quando a triagem é qualificada e a pessoa é encaminhada ao WhatsApp.\n  if(typeof window.fbq === "function") window.fbq("track","Lead");\n\n  const message=leadMessage(data);\n  const whatsappUrl="https://wa.me/5518981073779?text="+encodeURIComponent(message);
   x.innerHTML="<strong>Seu caso passou pela triagem inicial.</strong><p>Estamos abrindo o WhatsApp com as informações da sua triagem.</p><p><a class='btn btn-primary' href='"+whatsappUrl+"' target='_blank' rel='noopener'>Continuar no WhatsApp →</a></p><p class='micro'>A triagem inicial não substitui a análise jurídica completa.</p>";
   form.after(x);
   x.scrollIntoView({behavior:"smooth",block:"center"});
