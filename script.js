@@ -44,15 +44,12 @@ $("#leadForm").onsubmit=e=>{
   const old=$("#triagemResult");
   if(old)old.remove();
 
-  /*
-   * O número de WhatsApp do atendimento será configurado quando definido.
-   * Por enquanto, a triagem fica pronta no navegador e a página confirma
-   * o recebimento sem expor nenhum contato fictício.
-   */
+  const message=leadMessage(data);
+  const whatsappUrl="https://wa.me/5518981073779?text="+encodeURIComponent(message);
   const x=document.createElement("div");
   x.id="triagemResult";
   x.className="triagem-result qualified";
-  x.innerHTML="<strong>Triagem preenchida com sucesso.</strong><p>Recebemos suas informações iniciais. Em breve você poderá receber o contato para orientação sobre os próximos passos.</p><p class='micro'>As informações deste formulário são usadas para a análise inicial do seu caso.</p>";
+  x.innerHTML="<strong>Triagem preenchida com sucesso.</strong><p>Agora clique abaixo para enviar suas informações pelo WhatsApp.</p><p><a class='btn btn-primary' href='"+whatsappUrl+"' target='_blank' rel='noopener'>Enviar pelo WhatsApp →</a></p><p class='micro'>Ao clicar, o WhatsApp será aberto com a mensagem pronta para envio.</p>";
   form.after(x);
   x.scrollIntoView({behavior:"smooth",block:"center"});
 };
