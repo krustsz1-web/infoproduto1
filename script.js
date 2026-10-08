@@ -89,7 +89,7 @@ $("#leadForm").onsubmit=e=>{
   }
 
   // Registra Lead somente quando a triagem é qualificada e a pessoa é encaminhada ao WhatsApp.
-  if(typeof window.fbq === "function") window.fbq("track","Lead");
+  if(typeof window.fbq === "function") { window.fbq("track","Lead"); window.fbq("track","Subscribe"); }
 
   const message=leadMessage(data);
   const whatsappUrl="https://wa.me/5518981073779?text="+encodeURIComponent(message);
