@@ -44,6 +44,21 @@ function leadMessage(data){
   ].join("\n");
 }
 
+const dateInput=$('input[name="data"]');
+const dateOption=$('input[name="nao_sei_data"]');
+
+if(dateInput && dateOption){
+  dateOption.addEventListener("change",()=>{
+    if(dateOption.checked){
+      dateInput.value="";
+      dateInput.disabled=true;
+      dateInput.removeAttribute("required");
+    }else{
+      dateInput.disabled=false;
+    }
+  });
+}
+
 $("#leadForm").onsubmit=e=>{
   e.preventDefault();
   const form=e.currentTarget;
@@ -67,7 +82,8 @@ $("#leadForm").onsubmit=e=>{
   const message=leadMessage(data);
   const whatsappUrl="https://wa.me/5518981073779?text="+encodeURIComponent(message);
   x.innerHTML="<strong>Seu caso passou pela triagem inicial.</strong><p>As respostas indicam uma situação compatível com possível direito ao salário-maternidade. Clique abaixo para enviar os dados pelo WhatsApp.</p><p><a class='btn btn-primary' href='"+whatsappUrl+"' target='_blank' rel='noopener'>Enviar pelo WhatsApp →</a></p><p class='micro'>A triagem inicial não substitui a análise jurídica completa.</p>";
-  form.after(x);  x.scrollIntoView({behavior:"smooth",block:"center"});
+  form.after(x);
+  x.scrollIntoView({behavior:"smooth",block:"center"});
 };
 
 document.querySelectorAll('a[href="#triagem"]').forEach(a=>{
