@@ -88,9 +88,10 @@ $("#leadForm").onsubmit=e=>{
 
   const message=leadMessage(data);
   const whatsappUrl="https://wa.me/5518981073779?text="+encodeURIComponent(message);
-  x.innerHTML="<strong>Seu caso passou pela triagem inicial.</strong><p>As respostas indicam uma situação compatível com possível direito ao salário-maternidade. Clique abaixo para enviar os dados pelo WhatsApp.</p><p><a class='btn btn-primary' href='"+whatsappUrl+"' target='_blank' rel='noopener'>Enviar pelo WhatsApp →</a></p><p class='micro'>A triagem inicial não substitui a análise jurídica completa.</p>";
+  x.innerHTML="<strong>Seu caso passou pela triagem inicial.</strong><p>Estamos abrindo o WhatsApp com as informações da sua triagem.</p><p><a class='btn btn-primary' href='"+whatsappUrl+"' target='_blank' rel='noopener'>Continuar no WhatsApp →</a></p><p class='micro'>A triagem inicial não substitui a análise jurídica completa.</p>";
   form.after(x);
   x.scrollIntoView({behavior:"smooth",block:"center"});
+  setTimeout(()=>{ window.location.href=whatsappUrl; },350);
 };
 
 document.querySelectorAll('a[href="#triagem"]').forEach(a=>{
