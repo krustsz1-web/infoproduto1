@@ -28,13 +28,9 @@ function qualifiesLead(data){
     if(limitDate < new Date()) return false;
   }
 
-  // Só bloqueia quando a pessoa informa expressamente que nunca teve vínculo/contribuição.
-  // "Não sei informar" deve seguir para análise, pois não permite concluir pela ausência de direito.
   if(data.vinculo==="Não") return false;
 
   if(data.trabalho==="Estou desempregada"){
-    // Para desempregadas, sem histórico suficiente não devemos prometer direito.
-    // "Não sei informar" segue para análise jurídica individual.
     if(data.ultima_contribuicao==="Mais de 36 meses") return false;
   }
 
@@ -92,7 +88,11 @@ $("#leadForm").onsubmit=e=>{
     return;
   }
 
-  // Registra Lead somente quando a triagem é qualificada e a pessoa é encaminhada ao WhatsApp.\n  if(typeof window.fbq === "function") window.fbq("track","Lead");\n\n  const message=leadMessage(data);\n  const whatsappUrl="https://wa.me/5518981073779?text="+encodeURIComponent(message);
+  // Registra Lead somente quando a triagem é qualificada e a pessoa é encaminhada ao WhatsApp.
+  if(typeof window.fbq === "function") window.fbq("track","Lead");
+
+  const message=leadMessage(data);
+  const whatsappUrl="https://wa.me/5518981073779?text="+encodeURIComponent(message);
   x.innerHTML="<strong>Seu caso passou pela triagem inicial.</strong><p>Estamos abrindo o WhatsApp com as informações da sua triagem.</p><p><a class='btn btn-primary' href='"+whatsappUrl+"' target='_blank' rel='noopener'>Continuar no WhatsApp →</a></p><p class='micro'>A triagem inicial não substitui a análise jurídica completa.</p>";
   form.after(x);
   x.scrollIntoView({behavior:"smooth",block:"center"});
