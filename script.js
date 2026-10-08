@@ -1,63 +1,64 @@
-
-const SUPABASE_URL="https://tojhcxprizlqclkpfvwi.supabase.co";
-const SUPABASE_KEY="sb_publishable_PGDzvbbqZWQyiMqnoSfKMQ_2kKxz66H";
-const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-let session=null,profile=null,isAdmin=false,currentCase=null,chatChannel=null;
-
 const $=s=>document.querySelector(s);
-const esc=v=>String(v==null?"":v).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
-const fmtDate=v=>v?new Date(v).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"}):"";
-const fmtSize=n=>!n?"":n<1024?n+" B":(n/1024/1024).toFixed(1)+" MB";
-function toast(msg){const x=$("#toast");x.textContent=msg;x.classList.add("show");clearTimeout(window.__t);window.__t=setTimeout(()=>x.classList.remove("show"),2800)}
-function showPublic(){document.body.classList.remove("portal-mode");$("#public").classList.remove("hidden");$("#authView").classList.add("hidden");$("#portalView").classList.add("hidden")}
-function showAuth(tab){document.body.classList.remove("portal-mode");$("#public").classList.add("hidden");$("#portalView").classList.add("hidden");$("#authView").classList.remove("hidden");setAuthTab(tab||"login")}
-function showPortal(){document.body.classList.add("portal-mode");$("#public").classList.add("hidden");$("#authView").classList.add("hidden");$("#portalView").classList.remove("hidden")}
-function setAuthTab(tab){document.querySelectorAll("[data-auth-tab]").forEach(b=>b.classList.toggle("active",b.dataset.authTab===tab));$("#loginForm").classList.toggle("hidden",tab!=="login");$("#registerForm").classList.toggle("hidden",tab!=="register");$("#authMsg").textContent=""}
-async function loadIdentity(){
- const s=await db.auth.getSession();session=s.data.session;if(!session)return false;
- let p=await db.from("profiles").select("*").eq("id",session.user.id).maybeSingle();profile=p.data||{id:session.user.id,name:session.user.user_metadata?.name||session.user.email.split("@")[0],whatsapp:session.user.user_metadata?.whatsapp||""};
- if(!p.data)await db.from("profiles").upsert({id:session.user.id,name:profile.name,whatsapp:profile.whatsapp});
- const r=await db.from("user_roles").select("role").eq("user_id",session.user.id).maybeSingle();isAdmin=r.data&&(r.data.role==="admin"||r.data.role==="lawyer");return true
+
+function toast(msg){
+  const x=$("#toast");
+  if(!x)return;
+  x.textContent=msg;
+  x.classList.add("show");
+  clearTimeout(window.__t);
+  window.__t=setTimeout(()=>x.classList.remove("show"),2800);
 }
-async function ensureCase(){
- if(isAdmin||!session)return null;
- const q=await db.from("cases").select("*").eq("client_id",session.user.id).order("created_at",{ascending:false}).limit(1).maybeSingle();
- if(q.data){currentCase=q.data;return currentCase}
- const raw=localStorage.getItem("pendingTriage");if(!raw)return null;
- let triage;try{triage=JSON.parse(raw)}catch(e){return null}
- const q2=await db.from("cases").insert({client_id:session.user.id,status:"Novo",triage:triage}).select().single();
- if(q2.error){toast(q2.error.message);return null}currentCase=q2.data;localStorage.removeItem("pendingTriage");return currentCase
+
+function formatWhatsApp(value){
+  return String(value||"").replace(/\D/g,"");
 }
-function nav(active){const admin=isAdmin;let items=admin?[["overview","Visão geral"],["cases","Atendimentos"],["logout","Sair"]]:[["dashboard","Meu atendimento"],["chat","Conversa"],["docs","Documentos"],["profile","Meu perfil"],["logout","Sair"]];$("#portalNav").innerHTML=items.map(x=>"<button class='"+(x[0]===active?"active":"")+"' data-nav='"+x[0]+"'>"+x[1]+"</button>").join("");document.querySelectorAll("[data-nav]").forEach(b=>b.onclick=()=>b.dataset.nav==="logout"?logout():renderPortal(b.dataset.nav))}
-async function renderPortal(page){showPortal();nav(page);$("#topUser").textContent=profile?.name||"";$("#portalTitle").textContent=isAdmin?(page==="overview"?"Visão geral":page==="cases"?"Atendimentos":"Painel"):(page==="dashboard"?"Meu atendimento":page==="chat"?"Conversa":page==="docs"?"Documentos":"Meu perfil");if(isAdmin){if(page==="cases")return adminCases();return adminOverview()}if(page==="dashboard")return clientDashboard();if(page==="chat")return clientChat();if(page==="docs")return clientDocs();return clientProfile()}
-async function clientDashboard(){await ensureCase();const root=$("#portalContent");if(!currentCase){root.innerHTML="<div class='panel empty'><h2>Comece seu atendimento</h2><p>Faça a triagem para criar sua área.</p><a class='btn btn-primary' href='#triagem'>Ir para a triagem</a></div>";return}
- const docs=(await db.from("documents").select("*").eq("case_id",currentCase.id)).data||[];const reqs=(await db.from("document_requests").select("*").eq("case_id",currentCase.id)).data||[];const done=reqs.filter(r=>docs.some(d=>d.category===r.category)).length;const pct=reqs.length?Math.round(done/reqs.length*100):0;
- root.innerHTML="<div class='dashboard-grid'><div class='metric'><strong>"+reqs.length+"</strong><span>documentos solicitados</span></div><div class='metric'><strong>"+docs.length+"</strong><span>enviados</span></div><div class='metric'><strong>"+pct+"%</strong><span>documentação</span></div><div class='metric'><strong>"+esc(currentCase.status)+"</strong><span>status</span></div></div><div class='case-grid'><section class='panel'><div class='panel-title'><h2>Seu atendimento</h2><span class='status-pill'>"+esc(currentCase.status)+"</span></div><p class='muted'>Envie os documentos solicitados e converse com o advogado por aqui.</p><div class='progress'><span style='width:"+pct+"%'></span></div><p class='muted'>"+done+" de "+reqs.length+" itens recebidos</p><div class='checklist'>"+reqs.map(r=>{const ok=docs.some(d=>d.category===r.category);return "<div class='check-item'><span class='check "+(ok?"ok":"")+"'>"+(ok?"✓":"•")+"</span><div><strong>"+esc(r.category)+"</strong><div class='muted'>"+esc(r.note||"")+"</div></div></div>"}).join("")+"</div></section><section class='panel'><div class='panel-title'><h2>Conversa</h2><button class='mini-btn' id='openChat'>Abrir conversa</button></div><p class='muted'>Fale diretamente com o advogado responsável pelo seu atendimento.</p><div class='upload-box'><strong>Documentos e mensagens ficam neste atendimento.</strong><p class='muted'>Nunca envie senha do gov.br.</p></div></section></div>";$("#openChat").onclick=()=>renderPortal("chat")}
-function docRow(d,admin){return "<div class='doc-row'><div class='doc-info'><strong>"+esc(d.name)+"</strong><span>"+esc(d.category)+" · "+fmtSize(d.size)+" · "+fmtDate(d.created_at)+" · "+esc(d.status||"recebido")+"</span></div><div class='doc-actions'><button class='mini-btn' data-view-doc='"+d.id+"'>Ver</button>"+(admin?"<button class='mini-btn' data-doc-ok='"+d.id+"'>Aprovar</button>":"")+"</div></div>"}
-async function clientDocs(){await ensureCase();const root=$("#portalContent");if(!currentCase){root.innerHTML="<div class='panel empty'>Nenhum atendimento encontrado.</div>";return}const docs=(await db.from("documents").select("*").eq("case_id",currentCase.id).order("created_at",{ascending:false})).data||[];const reqs=(await db.from("document_requests").select("*").eq("case_id",currentCase.id).order("category")).data||[];root.innerHTML="<div class='panel'><div class='panel-title'><div><h2>Documentos</h2><p class='muted'>PDF, JPG, JPEG ou PNG. Máximo de 10 MB.</p></div></div><div class='upload-box'><input id='docUpload' type='file' accept='.pdf,.jpg,.jpeg,.png'></div><div class='doc-list' style='margin-top:16px'>"+(docs.length?docs.map(d=>docRow(d,false)).join(""):"<div class='empty'>Nenhum documento enviado.</div>")+"</div></div><div class='panel' style='margin-top:15px'><div class='panel-title'><h2>Checklist</h2></div><div class='checklist'>"+reqs.map(r=>{const ok=docs.some(d=>d.category===r.category);return "<div class='check-item'><span class='check "+(ok?"ok":"")+"'>"+(ok?"✓":"•")+"</span><div><strong>"+esc(r.category)+"</strong><div class='muted'>"+esc(r.note||"")+"</div></div></div>"}).join("")+"</div></div>";$("#docUpload").onchange=e=>{const f=e.target.files?.[0];if(f)uploadDocument(f,"Outros documentos")};bindDocButtons()}
-function bindDocButtons(){document.querySelectorAll("[data-view-doc]").forEach(b=>b.onclick=()=>viewDocument(b.dataset.viewDoc))}
-async function uploadDocument(file,category){if(file.size>10*1024*1024){toast("Máximo de 10 MB.");return}if(!["application/pdf","image/jpeg","image/png"].includes(file.type)){toast("Envie PDF, JPG ou PNG.");return}const path=session.user.id+"/"+currentCase.id+"/"+crypto.randomUUID()+"-"+file.name.replace(/[^a-zA-Z0-9._-]/g,"_");const up=await db.storage.from("case-documents").upload(path,file,{contentType:file.type});if(up.error){toast(up.error.message);return}const ins=await db.from("documents").insert({case_id:currentCase.id,uploader_id:session.user.id,name:file.name,path:path,mime:file.type,size:file.size,category:category,status:"recebido"});if(ins.error){await db.storage.from("case-documents").remove([path]);toast(ins.error.message);return}toast("Documento enviado.");clientDocs()}
-async function viewDocument(id){const d=(await db.from("documents").select("*").eq("id",id).single()).data;if(!d)return;const q=await db.storage.from("case-documents").createSignedUrl(d.path,120);if(q.error){toast(q.error.message);return}window.open(q.data.signedUrl,"_blank","noopener")}
-async function loadMessages(caseId){const q=await db.from("messages").select("*").eq("case_id",caseId).order("created_at");const box=$("#chatMessages");if(!box)return;box.innerHTML=(q.data||[]).map(messageHtml).join("");box.scrollTop=box.scrollHeight}
-function messageHtml(m){return "<div class='bubble "+(m.sender_id===session.user.id?"me":"other")+"'>"+esc(m.body||"Arquivo enviado")+"<small>"+fmtDate(m.created_at)+"</small></div>"}
-function subscribeChat(caseId){if(chatChannel)db.removeChannel(chatChannel);chatChannel=db.channel("case-"+caseId).on("postgres_changes",{event:"INSERT",schema:"public",table:"messages",filter:"case_id=eq."+caseId},p=>{const box=$("#chatMessages");if(box){box.insertAdjacentHTML("beforeend",messageHtml(p.new));box.scrollTop=box.scrollHeight}}).subscribe()}
-async function clientChat(){await ensureCase();if(!currentCase){$("#portalContent").innerHTML="<div class='panel empty'>Nenhum atendimento encontrado.</div>";return}$("#portalContent").innerHTML="<div class='chat-layout'><div class='chat-list panel'><button class='chat-user active'><strong>Seu advogado</strong><span>Salário-maternidade</span></button></div><div class='chat-window'><div class='chat-head'>Atendimento · Salário-maternidade</div><div class='chat-messages' id='chatMessages'></div><form class='chat-compose' id='chatForm'><label class='attach-btn'>＋<input id='chatFile' type='file' accept='.pdf,.jpg,.jpeg,.png'></label><input id='messageInput' class='message-input' placeholder='Digite sua mensagem...'><button class='btn btn-primary'>Enviar</button></form></div></div>";await loadMessages(currentCase.id);subscribeChat(currentCase.id);$("#chatForm").onsubmit=async e=>{e.preventDefault();const i=$("#messageInput"),body=i.value.trim();if(!body)return;const q=await db.from("messages").insert({case_id:currentCase.id,sender_id:session.user.id,body:body});if(q.error)toast(q.error.message);else i.value=""};$("#chatFile").onchange=e=>{const f=e.target.files?.[0];if(f)uploadDocument(f,"Anexo da conversa")}}
-async function clientProfile(){$("#portalContent").innerHTML="<div class='panel'><div class='panel-title'><h2>Meu perfil</h2></div><form id='profileForm' class='auth-form'><label>Nome<input name='name' value='"+esc(profile?.name)+"' required></label><label>WhatsApp<input name='whatsapp' value='"+esc(profile?.whatsapp||"")+"'></label><label>E-mail<input value='"+esc(session.user.email)+"' disabled></label><button class='btn btn-primary'>Salvar alterações</button></form><div class='note'><b>Privacidade</b><br>Seus dados e documentos ficam restritos ao atendimento. Nunca envie sua senha do gov.br.</div><button id='deleteRequest' class='mini-btn'>Solicitar encerramento da conta</button></div>";$("#profileForm").onsubmit=async e=>{e.preventDefault();const f=new FormData(e.currentTarget);const q=await db.from("profiles").update({name:f.get("name"),whatsapp:f.get("whatsapp")}).eq("id",session.user.id);if(q.error)toast(q.error.message);else{profile={...profile,name:f.get("name"),whatsapp:f.get("whatsapp")};toast("Perfil atualizado.")}};$("#deleteRequest").onclick=async()=>{const q=await db.from("deletion_requests").insert({user_id:session.user.id,status:"requested"});toast(q.error?"Não foi possível registrar.":"Solicitação registrada.")}}
-async function adminOverview(){const cases=(await db.from("cases").select("*").order("updated_at",{ascending:false})).data||[];const c={};cases.forEach(x=>c[x.status]=(c[x.status]||0)+1);$("#portalContent").innerHTML="<div class='dashboard-grid'><div class='metric'><strong>"+cases.length+"</strong><span>atendimentos</span></div><div class='metric'><strong>"+(c["Novo"]||0)+"</strong><span>novos</span></div><div class='metric'><strong>"+(c["Aguardando documentos"]||0)+"</strong><span>aguardando documentos</span></div><div class='metric'><strong>"+(c["Em exigência"]||0)+"</strong><span>em exigência</span></div></div><div class='panel'><div class='panel-title'><h2>Atendimentos recentes</h2><button class='mini-btn' id='allCases'>Ver todos</button></div>"+await adminTable(cases.slice(0,12))+"</div>";$("#allCases").onclick=()=>renderPortal("cases");bindAdminRows()}
-async function adminTable(cases){if(!cases.length)return "<div class='empty'>Nenhum atendimento ainda.</div>";const ids=[...new Set(cases.map(c=>c.client_id))];const ps=(await db.from("profiles").select("*").in("id",ids)).data||[];const map=new Map(ps.map(p=>[p.id,p]));return "<div class='table-scroll'><table class='admin-table'><thead><tr><th>Cliente</th><th>Status</th><th>Atualizado</th></tr></thead><tbody>"+cases.map(c=>"<tr data-admin-case='"+c.id+"'><td><strong>"+esc(map.get(c.client_id)?.name||"Cliente")+"</strong><br><span class='muted'>"+esc(map.get(c.client_id)?.whatsapp||"")+"</span></td><td><span class='status-pill'>"+esc(c.status)+"</span></td><td>"+fmtDate(c.updated_at)+"</td></tr>").join("")+"</tbody></table></div>"}
-function bindAdminRows(){document.querySelectorAll("[data-admin-case]").forEach(r=>r.onclick=()=>adminCase(r.dataset.adminCase))}
-async function adminCases(){const cases=(await db.from("cases").select("*").order("updated_at",{ascending:false})).data||[];$("#portalContent").innerHTML="<div class='panel'><div class='panel-title'><h2>Atendimentos</h2></div><div class='filter-row'><input id='caseSearch' placeholder='Buscar cliente...'><select id='caseFilter'><option>Todos</option><option>Novo</option><option>Aguardando documentos</option><option>Documentação em análise</option><option>Procuração pendente</option><option>Pronto para protocolo</option><option>Protocolado</option><option>Em exigência</option><option>Concluído</option><option>Arquivado</option></select></div><div id='caseTable'>"+await adminTable(cases)+"</div></div>";const apply=async()=>{const q=$("#caseSearch").value.toLowerCase(),f=$("#caseFilter").value;const ids=[...new Set(cases.map(c=>c.client_id))];const ps=(await db.from("profiles").select("*").in("id",ids)).data||[];const map=new Map(ps.map(p=>[p.id,p]));const filtered=cases.filter(c=>(f==="Todos"||c.status===f)&&(q===""||String(map.get(c.client_id)?.name||"").toLowerCase().includes(q)));$("#caseTable").innerHTML=await adminTable(filtered);bindAdminRows()};$("#caseSearch").oninput=apply;$("#caseFilter").onchange=apply;bindAdminRows()}
-async function adminCase(id){const c=(await db.from("cases").select("*").eq("id",id).single()).data;if(!c)return;const p=(await db.from("profiles").select("*").eq("id",c.client_id).single()).data;const docs=(await db.from("documents").select("*").eq("case_id",id).order("created_at",{ascending:false})).data||[];const hist=(await db.from("case_history").select("*").eq("case_id",id).order("created_at",{ascending:false})).data||[];$("#portalContent").innerHTML="<div class='admin-case'><div><div class='panel'><div class='panel-title'><div><h2>"+esc(p?.name||"Cliente")+"</h2><p class='muted'>"+esc(p?.whatsapp||"")+" · "+esc(session.user.email)+"</p></div><span class='status-pill'>"+esc(c.status)+"</span></div><div class='tabs'><button class='active' data-atab='summary'>Resumo</button><button data-atab='docs'>Documentos</button><button data-atab='triage'>Triagem</button><button data-atab='history'>Histórico</button></div><div id='adminTabContent'></div></div></div><div><div class='panel' style='margin-bottom:15px'><div class='panel-title'><h2>Status</h2></div><select id='statusChange' class='status-select'>"+["Novo","Aguardando documentos","Documentação em análise","Procuração pendente","Pronto para protocolo","Protocolado","Em exigência","Concluído","Arquivado"].map(s=>"<option "+(s===c.status?"selected":"")+">"+s+"</option>").join("")+"</select></div><div class='panel'><div class='panel-title'><h2>Conversa</h2></div><div class='chat-window' style='height:520px'><div class='chat-head'>"+esc(p?.name||"Cliente")+"</div><div class='chat-messages' id='chatMessages'></div><form class='chat-compose' id='chatForm'><input id='messageInput' class='message-input' placeholder='Responder cliente...'><button class='btn btn-primary'>Enviar</button></form></div></div></div></div>";
-function renderTab(t){document.querySelectorAll("[data-atab]").forEach(b=>b.classList.toggle("active",b.dataset.atab===t));const el=$("#adminTabContent");if(t==="docs")el.innerHTML="<div class='doc-list'>"+(docs.length?docs.map(d=>docRow(d,true)).join(""):"<div class='empty'>Nenhum documento enviado.</div>")+"</div>";else if(t==="triage")el.innerHTML="<pre style='white-space:pre-wrap;font:12px/1.6 DM Sans;background:var(--cream);padding:14px;border-radius:10px'>"+esc(JSON.stringify(c.triage||{},null,2))+"</pre>";else if(t==="history")el.innerHTML="<div class='doc-list'>"+(hist.length?hist.map(h=>"<div class='doc-row'><div class='doc-info'><strong>"+esc(h.description)+"</strong><span>"+fmtDate(h.created_at)+"</span></div></div>").join(""):"<div class='empty'>Sem histórico.</div>")+"</div>";else el.innerHTML="<p class='muted'>Atendimento criado em "+fmtDate(c.created_at)+".</p><p class='muted'>Use as abas para acompanhar documentos, triagem, histórico e conversa.</p>"}document.querySelectorAll("[data-atab]").forEach(b=>b.onclick=()=>renderTab(b.dataset.atab));renderTab("summary");
-$("#statusChange").onchange=async e=>{const n=e.target.value;if(n===c.status)return;const q=await db.from("cases").update({status:n}).eq("id",id);if(q.error){toast(q.error.message);return}await db.from("case_history").insert({case_id:id,actor_id:session.user.id,description:"Status alterado de "+c.status+" para "+n+"."});toast("Status atualizado.");adminCase(id)};
-bindDocButtons();document.querySelectorAll("[data-doc-ok]").forEach(b=>b.onclick=async()=>{const q=await db.from("documents").update({status:"aprovado"}).eq("id",b.dataset.docOk);if(q.error)toast(q.error.message);else{toast("Documento aprovado.");adminCase(id)}});await loadMessages(id);subscribeChat(id);$("#chatForm").onsubmit=async e=>{e.preventDefault();const i=$("#messageInput"),body=i.value.trim();if(!body)return;const q=await db.from("messages").insert({case_id:id,sender_id:session.user.id,body:body});if(q.error)toast(q.error.message);else i.value=""}}
-async function logout(){await db.auth.signOut();if(chatChannel)db.removeChannel(chatChannel);location.hash="#home"}
-async function route(){if(location.hash==="#login"){showAuth("login");return}if(location.hash==="#cadastro"){showAuth("register");return}if(location.hash==="#app"){if(await loadIdentity()){await ensureCase();showPortal();renderPortal(isAdmin?"overview":"dashboard")}else showAuth("login");return}showPublic()}
-document.querySelectorAll("[data-open-auth]").forEach(b=>b.onclick=()=>location.hash="#login");document.querySelectorAll("[data-back-public]").forEach(b=>b.onclick=()=>location.hash="#home");document.querySelectorAll("[data-auth-tab]").forEach(b=>b.onclick=()=>setAuthTab(b.dataset.authTab));$("#mobileMenu").onclick=()=>$(".sidebar").classList.toggle("open");$("#logoutBtn").onclick=logout;
-$("#leadForm").onsubmit=e=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.currentTarget).entries());localStorage.setItem("pendingTriage",JSON.stringify(d));const old=$("#triagemResult");if(old)old.remove();const x=document.createElement("div");x.id="triagemResult";x.className="triagem-result qualified";x.innerHTML="<strong>Pronto. Agora crie sua área exclusiva.</strong><p>Você poderá enviar documentos, conversar com o advogado e acompanhar o atendimento pelo próprio site.</p><p><button class='btn btn-primary' id='goRegister'>Criar minha conta →</button></p>";e.currentTarget.after(x);$("#goRegister").onclick=()=>location.hash="#cadastro";x.scrollIntoView({behavior:"smooth",block:"center"})};
-$("#loginForm").onsubmit=async e=>{e.preventDefault();const f=new FormData(e.currentTarget);$("#authMsg").textContent="Entrando...";const q=await db.auth.signInWithPassword({email:f.get("email"),password:f.get("password")});if(q.error){$("#authMsg").textContent=q.error.message;return}location.hash="#app"};
-$("#registerForm").onsubmit=async e=>{e.preventDefault();const f=new FormData(e.currentTarget);$("#authMsg").textContent="Criando sua conta...";const q=await db.auth.signUp({email:f.get("email"),password:f.get("password"),options:{data:{name:f.get("name"),whatsapp:f.get("whatsapp")},emailRedirectTo:location.origin+"#login"}});if(q.error){$("#authMsg").textContent=q.error.message;return}if(q.data.session)location.hash="#app";else {$("#authMsg").innerHTML="Conta criada. Confira seu e-mail para confirmar e depois entre novamente. <button type=\"button\" class=\"text-button\" id=\"resendConfirmation\">Reenviar e-mail de confirmação</button>";$("#resendConfirmation").onclick=async()=>{const email=f.get("email");const r=await db.auth.resend({type:"signup",email});$("#authMsg").textContent=r.error?r.error.message:"E-mail de confirmação reenviado. Verifique também a caixa de spam.";}}};
-$("#resetPassword").onclick=async()=>{const email=prompt("E-mail cadastrado:");if(!email)return;const q=await db.auth.resetPasswordForEmail(email,{redirectTo:location.origin+"#login"});toast(q.error?q.error.message:"Instruções enviadas.")};
-db.auth.onAuthStateChange((_,s)=>{session=s;if(s&&location.hash==="#app")setTimeout(route,0)});
-window.addEventListener("hashchange",route);
-route();
+
+function collectLead(form){
+  const data=Object.fromEntries(new FormData(form).entries());
+  if(data.nao_sei_data==="sim") data.data="Não sei informar";
+  delete data.nao_sei_data;
+  return data;
+}
+
+function leadMessage(data){
+  return [
+    "Olá! Quero verificar meu possível direito ao salário-maternidade.",
+    "",
+    "*Nome:* "+data.nome,
+    "*Situação:* "+data.fase,
+    "*Categoria:* "+data.trabalho,
+    "*Já teve vínculo/contribuição ao INSS:* "+data.vinculo,
+    "*Última contribuição:* "+(data.ultima_contribuicao||"Não informado"),
+    "*Já pediu ao INSS:* "+data.pedido,
+    "*Parto/nascimento:* "+(data.data||"Não informado"),
+    "*WhatsApp:* "+data.whatsapp
+  ].join("\n");
+}
+
+$("#leadForm").onsubmit=e=>{
+  e.preventDefault();
+  const form=e.currentTarget;
+  if(!form.reportValidity())return;
+
+  const data=collectLead(form);
+  const old=$("#triagemResult");
+  if(old)old.remove();
+
+  /*
+   * O número de WhatsApp do atendimento será configurado quando definido.
+   * Por enquanto, a triagem fica pronta no navegador e a página confirma
+   * o recebimento sem expor nenhum contato fictício.
+   */
+  const x=document.createElement("div");
+  x.id="triagemResult";
+  x.className="triagem-result qualified";
+  x.innerHTML="<strong>Triagem preenchida com sucesso.</strong><p>Recebemos suas informações iniciais. Em breve você poderá receber o contato para orientação sobre os próximos passos.</p><p class='micro'>As informações deste formulário são usadas para a análise inicial do seu caso.</p>";
+  form.after(x);
+  x.scrollIntoView({behavior:"smooth",block:"center"});
+};
+
+document.querySelectorAll('a[href="#triagem"]').forEach(a=>{
+  a.addEventListener("click",()=>{
+    setTimeout(()=>$("#triagem")?.scrollIntoView({behavior:"smooth",block:"start"}),0);
+  });
+});
