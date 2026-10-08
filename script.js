@@ -21,6 +21,13 @@ function collectLead(form){
 }
 
 function qualifiesLead(data){
+  if(data.fase==="Já tive o bebê" && data.data && data.data!=="Não sei informar"){
+    const birthDate=new Date(data.data+"T00:00:00");
+    const limitDate=new Date(birthDate);
+    limitDate.setFullYear(limitDate.getFullYear()+5);
+    if(limitDate < new Date()) return false;
+  }
+
   if(data.vinculo!=="Sim") return false;
   if(data.trabalho==="Estou desempregada"){
     return data.ultima_contribuicao==="Menos de 12 meses";
