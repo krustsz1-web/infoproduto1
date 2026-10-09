@@ -90,7 +90,13 @@ const $=s=>document.querySelector(s);
       medium:validMediums.has(medium)?medium:"other"
     };
   };
+  let lastWhatsAppEvent=0;
   function send(eventName){
+    if(eventName==="whatsapp_click"){
+      const eventTime=Date.now();
+      if(eventTime-lastWhatsAppEvent<2000)return;
+      lastWhatsAppEvent=eventTime;
+    }
     touch();
     const attribution=sourceInfo();
     const payload={
@@ -245,7 +251,7 @@ $("#leadForm").onsubmit=e=>{
   x.innerHTML="<strong>Seu caso passou pela triagem inicial.</strong><p>Estamos abrindo o WhatsApp com as informações da sua triagem.</p><p><a class='btn btn-primary' href='"+whatsappUrl+"' target='_blank' rel='noopener'>Continuar no WhatsApp →</a></p><p class='micro'>A triagem inicial não substitui a análise jurídica completa.</p>";
   form.after(x);
   x.scrollIntoView({behavior:"smooth",block:"center"});
-  setTimeout(()=>{ window.location.href=whatsappUrl; },350);
+  setTimeout(()=>{ window.__maeAnalytics?.track("whatsapp_click"); window.location.href=whatsappUrl; },350);
 };
 
 document.querySelectorAll('a[href="#triagem"]').forEach(a=>{
