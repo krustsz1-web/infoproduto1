@@ -1,5 +1,25 @@
 const $=s=>document.querySelector(s);
 
+
+/* Google Analytics 4: eventos anônimos, sem enviar dados pessoais do formulário. */
+(function initMaeAnalytics(){
+  function track(name, extra={}) {
+    if(typeof window.gtag !== "function") return;
+    window.gtag("event", name, {page_location: location.href.split("?")[0], ...extra});
+  }
+  window.__maeAnalytics={track:(name)=>{if(["triage_start","triage_submit","whatsapp_click","cta_click"].includes(name))track(name);}};
+  document.addEventListener("click", event=>{
+    const target=event.target instanceof Element?event.target.closest("a,button"):null;
+    if(!target)return;
+    if(target.matches('a[href^="https://wa.me/"]')) track("whatsapp_click");
+    else if(target.matches('a[href="#triagem"], #leadForm button[type="submit"]')) track("cta_click");
+  },true);
+  const form=document.querySelector("#leadForm");
+  if(form) form.addEventListener("focusin",()=>{
+    if(!form.dataset.analyticsStarted){form.dataset.analyticsStarted="1";track("triage_start");}
+  });
+})();
+
 function toast(msg){
   const x=$("#toast");
   if(!x)return;
@@ -88,7 +108,8 @@ $("#leadForm").onsubmit=e=>{
     return;
   }
 
-  // Registra Lead somente quando a triagem é qualificada e a pessoa é encaminhada ao WhatsApp.
+  // Registra apenas a conclusão da triagem, nunca as respostas ou dados pessoais.
+  window.__maeAnalytics?.track("triage_submit");
   if(typeof window.fbq === "function") { window.fbq("track","Lead"); window.fbq("track","Subscribe"); }
 
   const message=leadMessage(data);
@@ -96,7 +117,7 @@ $("#leadForm").onsubmit=e=>{
   x.innerHTML="<strong>Seu caso passou pela triagem inicial.</strong><p>Estamos abrindo o WhatsApp com as informações da sua triagem.</p><p><a class='btn btn-primary' href='"+whatsappUrl+"' target='_blank' rel='noopener'>Continuar no WhatsApp →</a></p><p class='micro'>A triagem inicial não substitui a análise jurídica completa.</p>";
   form.after(x);
   x.scrollIntoView({behavior:"smooth",block:"center"});
-  setTimeout(()=>{ window.location.href=whatsappUrl; },350);
+  setTimeout(()=>{ window.__maeAnalytics?.track("whatsapp_click"); window.location.href=whatsappUrl; },350);
 };
 
 document.querySelectorAll('a[href="#triagem"]').forEach(a=>{
